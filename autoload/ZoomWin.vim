@@ -1,8 +1,8 @@
-" ZoomWin:	Brief-like ability to zoom into/out-of a window
-" Author:	Charles Campbell
-"			original version by Ron Aaron
-" Date:		Jan 26, 2009
-" Version:	23
+" ZoomWin:  Brief-like ability to zoom into/out-of a window
+" Author: Charles Campbell
+"     original version by Ron Aaron
+" Date:   Jan 26, 2009
+" Version:  23
 " History: see :help zoomwin-history {{{1
 " GetLatestVimScripts: 508 1 :AutoInstall: ZoomWin.vim
 
@@ -29,26 +29,26 @@ set cpo&vim
 " ZoomWin#ZoomWin: toggles between a single-window and a multi-window layout {{{2
 "          The original version was by Ron Aaron.
 fun! ZoomWin#ZoomWin()
-"  let g:decho_hide= 1		"Decho
+"  let g:decho_hide= 1    "Decho
 "  call Dfunc("ZoomWin#ZoomWin() winbufnr(2)=".winbufnr(2))
 
   " if the vim doesn't have +mksession, only a partial zoom is available {{{3
   if !has("mksession")
    if !exists("s:partialzoom")
     echomsg "missing the +mksession feature; only a partial zoom is available"
-	let s:partialzoom= 0
+  let s:partialzoom= 0
    endif
    if v:version < 630
-   	echoerr "***sorry*** you need an updated vim, preferably with +mksession"
+    echoerr "***sorry*** you need an updated vim, preferably with +mksession"
    elseif s:partialzoom
-   	" partial zoom out
-	let s:partialzoom= 0
-	exe s:winrestore
+    " partial zoom out
+  let s:partialzoom= 0
+  exe s:winrestore
    else
-   	" partial zoom in
-	let s:partialzoom= 1
-	let s:winrestore = winrestcmd()
-	res
+    " partial zoom in
+  let s:partialzoom= 1
+  let s:winrestore = winrestcmd()
+  res
    endif
 "  call Dret("ZoomWin#ZoomWin : partialzoom=".s:partialzoom)
    return
@@ -72,137 +72,137 @@ fun! ZoomWin#ZoomWin()
 
   if winbufnr(2) == -1
     " there's only one window - restore to multiple-windows mode {{{3
-"	call Decho("there's only one window - restore to multiple windows")
+" call Decho("there's only one window - restore to multiple windows")
 
     if exists("s:sessionfile") && filereadable(s:sessionfile)
-	  " save position in current one-window-only
-"	  call Decho("save position in current one-window-only in sponly")
+    " save position in current one-window-only
+"   call Decho("save position in current one-window-only in sponly")
       let sponly     = s:SavePosn(0)
       let s:origline = line(".")
       let s:origcol  = virtcol(".")
 
       " source session file to restore window layout
-	  let ei_keep= &ei
-	  set ei=all
-	  exe 'silent! so '.fnameescape(s:sessionfile)
-"	  Decho("@@<".@@.">")
+    let ei_keep= &ei
+    set ei=all
+    exe 'silent! so '.fnameescape(s:sessionfile)
+"   Decho("@@<".@@.">")
       let v:this_session= s:sesskeep
 
       if exists("s:savedposn1")
         " restore windows' positioning and buffers
-"		call Decho("restore windows, positions, buffers")
+"   call Decho("restore windows, positions, buffers")
         windo call s:RestorePosn(s:savedposn{winnr()})|unlet s:savedposn{winnr()}
         call s:GotoWinNum(s:winkeep)
         unlet s:winkeep
       endif
 
-	  if line(".") != s:origline || virtcol(".") != s:origcol
-	   " If the cursor hasn't moved from the original position,
-	   " then let the position remain what it was in the original
-	   " multi-window layout.
-"	   call Decho("restore position using sponly")
+    if line(".") != s:origline || virtcol(".") != s:origcol
+     " If the cursor hasn't moved from the original position,
+     " then let the position remain what it was in the original
+     " multi-window layout.
+"    call Decho("restore position using sponly")
        call s:RestorePosn(sponly)
-	  endif
+    endif
 
-	  " delete session file and variable holding its name
-"	  call Decho("delete session file")
+    " delete session file and variable holding its name
+"   call Decho("delete session file")
       call delete(s:sessionfile)
       unlet s:sessionfile
-	  let &ei=ei_keep
+    let &ei=ei_keep
     endif
 
   else " there's more than one window - go to only-one-window mode {{{3
-"	call Decho("there's multiple windows - goto one-window-only")
+" call Decho("there's multiple windows - goto one-window-only")
 
     let s:winkeep    = winnr()
     let s:sesskeep   = v:this_session
 
-	" doesn't work with the command line window (normal mode q:)
- 	if &bt == "nofile" && expand("%") == (v:version < 702 ? 'command-line' : '[Command Line]')
-	 echoerr "***error*** ZoomWin#ZoomWin doesn't work with the ".expand("%")." window"
+  " doesn't work with the command line window (normal mode q:)
+  if &bt == "nofile" && expand("%") == (v:version < 702 ? 'command-line' : '[Command Line]')
+   echoerr "***error*** ZoomWin#ZoomWin doesn't work with the ".expand("%")." window"
 "     call Dret("ZoomWin#ZoomWin : ".expand('%')." window error")
-	 return
-	endif
-"	call Decho("1: @@<".@@.">")
+   return
+  endif
+" call Decho("1: @@<".@@.">")
 
-	" disable all events (autocmds)
-"	call Decho("disable events")
+  " disable all events (autocmds)
+" call Decho("disable events")
     let ei_keep= &ei
-	set ei=all
-"	call Decho("2: @@<".@@.">")
+  set ei=all
+" call Decho("2: @@<".@@.">")
 
     " save window positioning commands
-"	call Decho("save window positioning commands")
+" call Decho("save window positioning commands")
     windo let s:savedposn{winnr()}= s:SavePosn(1)
     call s:GotoWinNum(s:winkeep)
 
     " set up name of session file
-"	call Decho("3: @@<".@@.">")
+" call Decho("3: @@<".@@.">")
     let s:sessionfile= tempname()
-"	call Decho("4: @@<".@@.">")
+" call Decho("4: @@<".@@.">")
 
     " save session
-"	call Decho("save session")
+" call Decho("save session")
     let ssop_keep = &ssop
-	let &ssop     = 'blank,help,winsize,folds,globals,localoptions,options'
-"	call Decho("5: @@<".@@.">")
-	exe 'mksession! '.fnameescape(s:sessionfile)
-"	call Decho("6: @@<".@@.">")
-	let keepyy= @@
-	let keepy0= @0
-	let keepy1= @1
-	let keepy2= @2
-	let keepy3= @3
-	let keepy4= @4
-	let keepy5= @5
-	let keepy6= @6
-	let keepy7= @7
-	let keepy8= @8
-	let keepy9= @9
+  let &ssop     = 'blank,help,winsize,folds,globals,localoptions,options'
+" call Decho("5: @@<".@@.">")
+  exe 'mksession! '.fnameescape(s:sessionfile)
+" call Decho("6: @@<".@@.">")
+  let keepyy= @@
+  let keepy0= @0
+  let keepy1= @1
+  let keepy2= @2
+  let keepy3= @3
+  let keepy4= @4
+  let keepy5= @5
+  let keepy6= @6
+  let keepy7= @7
+  let keepy8= @8
+  let keepy9= @9
     set lz ei=all bh=
-	if v:version >= 700
-	 try
-	  exe "keepalt keepmarks new! ".fnameescape(s:sessionfile)
-	 catch /^Vim\%((\a\+)\)\=:E/
-	  echoerr "Too many windows"
+  if v:version >= 700
+   try
+    exe "keepalt keepmarks new! ".fnameescape(s:sessionfile)
+   catch /^Vim\%((\a\+)\)\=:E/
+    echoerr "Too many windows"
       silent! call delete(s:sessionfile)
       unlet s:sessionfile
 "      call Dret("ZoomWin#ZoomWin : too many windows")
       return
-	 endtry
+   endtry
      silent! keepjumps keepmarks v/wincmd\|split\|resize/d
      keepalt w!
      keepalt bw!
-	else
-	 exe "new! ".fnameescape(s:sessionfile)
+  else
+   exe "new! ".fnameescape(s:sessionfile)
      v/wincmd\|split\|resize/d
      w!
      bw!
     endif
-	let @@= keepyy
-	let @0= keepy0
-	let @1= keepy1
-	let @2= keepy2
-	let @3= keepy3
-	let @4= keepy4
-	let @5= keepy5
-	let @6= keepy6
-	let @7= keepy7
-	let @8= keepy8
-	let @9= keepy9
+  let @@= keepyy
+  let @0= keepy0
+  let @1= keepy1
+  let @2= keepy2
+  let @3= keepy3
+  let @4= keepy4
+  let @5= keepy5
+  let @6= keepy6
+  let @7= keepy7
+  let @8= keepy8
+  let @9= keepy9
     call histdel('search', -1)
     let @/ = histget('search', -1)
-"	call Decho("7: @@<".@@.">")
+" call Decho("7: @@<".@@.">")
 
     " restore user's session options and restore event handling
-"	call Decho("restore user session options and event handling")
+" call Decho("restore user session options and event handling")
     set nolz
     let &ssop = ssop_keep
     silent! only!
-"	call Decho("8: @@<".@@.">")
+" call Decho("8: @@<".@@.">")
     let &ei   = ei_keep
     echomsg expand("%")
-"	call Decho("9: @@<".@@.">")
+" call Decho("9: @@<".@@.">")
   endif
 
   " restore user option settings {{{3
@@ -229,8 +229,8 @@ endfun
 fun! s:SavePosn(savewinhoriz)
 "  call Dfunc("SavePosn(savewinhoriz=".a:savewinhoriz.") file<".expand("%").">")
   let swline    = line(".")
-  if swline == 1 && getline(1) == ""
-   " empty buffer
+  if @% =~ 'term://' || (swline == 1 && getline(1) == "")
+   " empty buffer or terminal
    let savedposn= "silent b ".winbufnr(0)
 "   call Dret("SavePosn savedposn<".savedposn.">")
    return savedposn
@@ -253,19 +253,19 @@ fun! s:SavePosn(savewinhoriz)
    "   bufhidden buftype buflisted
    let settings= ""
    if &bh != ""
-   	let settings="bh=".&bh
-	setlocal bh=hide
+    let settings="bh=".&bh
+  setlocal bh=hide
    endif
    if !&bl
-   	let settings= settings." nobl"
-	setlocal bl
+    let settings= settings." nobl"
+  setlocal bl
    endif
    if &bt != ""
-   	let settings= settings." bt=".&bt
-	setlocal bt=
+    let settings= settings." bt=".&bt
+  setlocal bt=
    endif
    if settings != ""
-   	let savedposn= savedposn.":setlocal ".settings."\<cr>"
+    let savedposn= savedposn.":setlocal ".settings."\<cr>"
    endif
 
   endif
@@ -315,11 +315,11 @@ endfun
 " ZoomWinPreserve:  This function, largely written by David Fishburn, {{{2
 "   allows ZoomWin to "preserve" certain windows:
 "
-"   	TagList, by Yegappan Lakshmanan
-"   	  http://vim.sourceforge.net/scripts/script.php?script_id=273
+"     TagList, by Yegappan Lakshmanan
+"       http://vim.sourceforge.net/scripts/script.php?script_id=273
 "
-"   	WinManager, by Srinath Avadhanula
-"   	  http://vim.sourceforge.net/scripts/script.php?script_id=95
+"     WinManager, by Srinath Avadhanula
+"       http://vim.sourceforge.net/scripts/script.php?script_id=95
 "
 "  It does so by closing the associated window upon entry to ZoomWin
 "  and re-opening it upon exit by using commands provided by the
